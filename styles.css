@@ -119,3 +119,111 @@ body.dark #motionCanvas, body.dark .graph-wrap canvas { background: rgba(255, 25
   .live-readout > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   h1 { font-size: 42px; }
 }
+/* ================================
+   Classroom TV / large screen mode
+================================ */
+
+@media (min-width: 1500px) {
+  .app-shell {
+    max-width: 1800px;
+    padding: 0 60px;
+  }
+
+  .workspace {
+    grid-template-columns: 380px 1fr;
+    gap: 28px;
+  }
+
+  #motionCanvas {
+    height: 380px;
+  }
+
+  .graph-wrap canvas {
+    height: 280px;
+  }
+
+  .live-readout strong {
+    font-size: 20px;
+  }
+
+  h1 {
+    font-size: 72px;
+  }
+
+  .lede {
+    font-size: 20px;
+  }
+}
+
+/* ================================
+   Phone-friendly mode
+================================ */
+
+@media (max-width: 600px) {
+  .app-shell {
+    padding: 0 12px;
+  }
+
+  .topbar {
+    height: 58px;
+  }
+
+  .brand {
+    font-size: 16px;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 22px 0;
+  }
+
+  h1 {
+    font-size: 34px;
+    line-height: 1.05;
+  }
+
+  .lede {
+    font-size: 14px;
+  }
+
+  .controls,
+  .diagram-card,
+  .graphs-card {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .preset-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #motionCanvas {
+    height: 240px;
+  }
+
+  .graph-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-wrap canvas {
+    height: 190px;
+  }
+
+  .live-readout {
+    grid-template-columns: 1fr;
+  }
+
+  .live-readout > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .live-readout > div:last-child {
+    border-bottom: 0;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
