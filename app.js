@@ -99,7 +99,13 @@ function drawMotionDiagram() {
   const allPositions = intervalSamples.map((sample) => sample.p).concat(motionAt(state.time).p);
   const [min, max] = bounds(allPositions);
   const left = Math.min(92, w * 0.18), right = w - 28;
-  const accelerationY = 55, velocityY = 132, positionY = 215;
+  const diagramTop = 40;
+  const rowGap = 72;
+
+  const accelerationY = diagramTop;
+  const velocityY = diagramTop + rowGap;
+  const positionY = diagramTop + rowGap * 2; 
+  const axisY = diagramTop + rowGap * 3;
   const xFor = (p) => left + ((p - min) / (max - min)) * (right - left);
 
   // Row labels
