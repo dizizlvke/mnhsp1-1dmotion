@@ -68,25 +68,45 @@ function bounds(values) {
 }
 
 function drawVectorArrow(ctx, x1, y, x2, color, alpha = 1) {
-  const direction = Math.sign(x2 - x1);
+  const distance = x2 - x1;
+  const direction = Math.sign(distance);
+
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
-  ctx.lineWidth = 2.3;
+
+  // Make the arrow easier to see on projectors and mobile devices.
+  ctx.lineWidth = 3.8;
   ctx.lineCap = "round";
-  if (direction === 0 || Math.abs(x2 - x1) < 4) {
-    ctx.beginPath(); ctx.arc(x1, y, 2.4, 0, Math.PI * 2); ctx.fill();
+  ctx.lineJoin = "round";
+
+  // If the arrow is extremely short, draw a dot instead.
+  if (direction === 0 || Math.abs(distance) < 6) {
+    ctx.beginPath();
+    ctx.arc(x1, y, 3.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
     return;
   }
-  ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+
+  const headLength = 12;
+  const headWidth = 8;
+
+  // Shaft
+  ctx.beginPath();
+  ctx.moveTo(x1, y);
+  ctx.lineTo(x2, y);
+  ctx.stroke();
+
+  // Arrowhead
   ctx.beginPath();
   ctx.moveTo(x2, y);
-  ctx.lineTo(x2 - direction * 7, y - 4.5);
-  ctx.lineTo(x2 - direction * 7, y + 4.5);
+  ctx.lineTo(x2 - direction * headLength, y - headWidth / 2);
+  ctx.lineTo(x2 - direction * headLength, y + headWidth / 2);
   ctx.closePath();
   ctx.fill();
+
   ctx.restore();
 }
 
