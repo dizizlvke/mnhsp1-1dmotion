@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interactive one-dimensional motion diagram and graph generator." />
+    <title>Motion Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=STIX+Two+Math&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Motion Lab home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Motion Lab</span>
+        </a>
+        <p>1D Kinematics Playground</p>
+        <button class="icon-button" id="themeButton" type="button" aria-label="Toggle color theme">◐</button>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div>
+            <p class="eyebrow">SEE MOTION, NOT JUST MATH</p>
+            <h1>Turn an equation into <em>motion.</em></h1>
+            <p class="lede">Adjust the conditions, press play, and watch the diagram and graphs tell the same story.</p>
+          </div>
+          <div class="formula-card" aria-label="Current motion equations">
+            <span>MODEL 01</span>
+            <p id="positionFormula">p(t) = 0 + 2t + ½(0)t²</p>
+            <p id="velocityFormula">v(t) = 2 + 0t</p>
+          </div>
+        </section>
+
+        <section class="workspace">
+          <aside class="controls panel">
+            <div class="section-heading">
+              <span>01</span>
+              <div><h2>Set the motion</h2><p>Constant acceleration model</p></div>
+            </div>
+
+            <div class="preset-row" aria-label="Motion presets">
+              <button class="preset active" data-preset="cruise" type="button">Cruise</button>
+              <button class="preset" data-preset="speedup" type="button">Speed up</button>
+              <button class="preset" data-preset="brake" type="button">Brake</button>
+              <button class="preset" data-preset="reverse" type="button">Reverse</button>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><label for="position">Initial position</label><output id="positionValue">0 m</output></div>
+              <input id="position" type="range" min="-10" max="10" value="0" step="0.5" />
+              <div class="range-limits"><span>−10 m</span><span>10 m</span></div>
+            </div>
+            <div class="field">
+              <div class="field-label"><label for="velocity">Initial velocity</label><output id="velocityValue">2 m/s</output></div>
+              <input id="velocity" type="range" min="-8" max="8" value="2" step="0.5" />
+              <div class="range-limits"><span>−8 m/s</span><span>8 m/s</span></div>
+            </div>
+            <div class="field">
+              <div class="field-label"><label for="acceleration">Acceleration</label><output id="accelerationValue">0 m/s²</output></div>
+              <input id="acceleration" type="range" min="-4" max="4" value="0" step="0.25" />
+              <div class="range-limits"><span>−4 m/s²</span><span>4 m/s²</span></div>
+            </div>
+            <div class="field compact">
+              <div class="field-label"><label for="duration">Duration</label><output id="durationValue">8 s</output></div>
+              <input id="duration" type="range" min="2" max="12" value="8" step="1" />
+            </div>
+
+            <button class="play-button" id="playButton" type="button"><span id="playIcon">▶</span><span id="playText">Play motion</span></button>
+            <button class="reset-button" id="resetButton" type="button">Reset playhead</button>
+          </aside>
+
+          <section class="visuals">
+            <article class="panel diagram-card">
+              <div class="card-title"><div><span>02</span><h2>Motion diagram</h2></div><p>Dots every 1 second</p></div>
+              <canvas id="motionCanvas" role="img" aria-label="Motion diagram showing the object's positions over time"></canvas>
+              <div class="live-readout">
+                <div><span>TIME</span><strong id="timeReadout">0.00 s</strong></div>
+                <div><span>POSITION</span><strong id="positionReadout">0.00 m</strong></div>
+                <div><span>VELOCITY</span><strong id="velocityReadout">2.00 m/s</strong></div>
+                <div><span>ACCEL.</span><strong id="accelerationReadout">0.00 m/s²</strong></div>
+              </div>
+            </article>
+
+            <article class="panel graphs-card">
+              <div class="card-title"><div><span>03</span><h2>Motion graphs</h2></div><div class="legend"><i></i> current time</div></div>
+              <div class="graph-grid">
+                <div class="graph-wrap"><p><b>p</b> POSITION <span>(m)</span></p><canvas id="positionGraph"></canvas></div>
+                <div class="graph-wrap"><p><b>v</b> VELOCITY <span>(m/s)</span></p><canvas id="velocityGraph"></canvas></div>
+                <div class="graph-wrap"><p><b>a</b> ACCELERATION <span>(m/s²)</span></p><canvas id="accelerationGraph"></canvas></div>
+              </div>
+              <div class="time-axis-label">TIME (s) →</div>
+            </article>
+          </section>
+        </section>
+      </main>
+
+      <footer><span>Motion Lab · Built for curious minds</span><span>p–t · v–t · a–t</span></footer>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
