@@ -68,6 +68,10 @@
               <div class="field-label"><label for="duration">Duration</label><output id="durationValue">8 s</output></div>
               <input id="duration" type="range" min="2" max="12" value="8" step="1" />
             </div>
+            <div class="field compact">
+              <div class="field-label"><label for="timeInterval">Time interval</label><output id="timeIntervalValue">1 s</output></div>
+              <input id="timeInterval" type="range" min="0.5" max="2" value="1" step="0.5" />
+            </div>
 
             <button class="play-button" id="playButton" type="button"><span id="playIcon">▶</span><span id="playText">Play motion</span></button>
             <button class="reset-button" id="resetButton" type="button">Reset playhead</button>
@@ -75,7 +79,7 @@
 
           <section class="visuals">
             <article class="panel diagram-card">
-              <div class="card-title"><div><span>02</span><h2>Motion diagram</h2></div><p>Dots every 1 second</p></div>
+              <div class="card-title"><div><span>02</span><h2>Motion diagram</h2></div><p id="dotIntervalLabel">Dots every 1 second</p></div>
               <canvas id="motionCanvas" role="img" aria-label="Motion diagram showing the object's positions over time"></canvas>
               <div class="live-readout">
                 <div><span>TIME</span><strong id="timeReadout">0.00 s</strong></div>
