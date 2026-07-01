@@ -71,7 +71,12 @@ input[type="range"] { width: 100%; height: 4px; accent-color: var(--cyan); curso
 .live-readout > div { padding: 10px 15px; border-right: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
 .live-readout > div:last-child { border: 0; }
 .live-readout span { font: 8px "Space Mono"; color: var(--muted); }
-.live-readout strong { font: 15px "STIX Two Math", "Times New Roman", serif; color: var(--cyan); }
+.live-readout strong { font: 15px "STIX Two Math", "Times New Roman", serif; }
+
+#positionReadout { color: var(--cyan); }
+#velocityReadout { color: var(--lime); }
+#accelerationReadout { color: var(--yellow); }
+#timeReadout { color: var(--cyan); }
 .graph-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
 .graph-wrap { min-width: 0; }
 .graph-wrap p { font: 12px "STIX Two Math", "Times New Roman", serif; color: var(--muted); margin: 0 0 7px; }

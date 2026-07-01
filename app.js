@@ -73,16 +73,9 @@ function drawVectorArrow(ctx, x1, y, x2, color, alpha = 1) {
 
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.strokeStyle = color;
   ctx.fillStyle = color;
 
-  // Make the arrow easier to see on projectors and mobile devices.
-  ctx.lineWidth = 3.8;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  // If the arrow is extremely short, draw a dot instead.
-  if (direction === 0 || Math.abs(distance) < 6) {
+  if (direction === 0 || Math.abs(distance) < 8) {
     ctx.beginPath();
     ctx.arc(x1, y, 3.2, 0, Math.PI * 2);
     ctx.fill();
@@ -90,20 +83,22 @@ function drawVectorArrow(ctx, x1, y, x2, color, alpha = 1) {
     return;
   }
 
-  const headLength = 12;
-  const headWidth = 8;
+  const shaftHeight = 4.8;
+  const headLength = 13;
+  const headHeight = 11;
 
-  // Shaft
+  const arrowLength = Math.abs(distance);
+  const usableHeadLength = Math.min(headLength, arrowLength * 0.55);
+  const baseX = x2 - direction * usableHeadLength;
+
   ctx.beginPath();
-  ctx.moveTo(x1, y);
+  ctx.moveTo(x1, y - shaftHeight / 2);
+  ctx.lineTo(baseX, y - shaftHeight / 2);
+  ctx.lineTo(baseX, y - headHeight / 2);
   ctx.lineTo(x2, y);
-  ctx.stroke();
-
-  // Arrowhead
-  ctx.beginPath();
-  ctx.moveTo(x2, y);
-  ctx.lineTo(x2 - direction * headLength, y - headWidth / 2);
-  ctx.lineTo(x2 - direction * headLength, y + headWidth / 2);
+  ctx.lineTo(baseX, y + headHeight / 2);
+  ctx.lineTo(baseX, y + shaftHeight / 2);
+  ctx.lineTo(x1, y + shaftHeight / 2);
   ctx.closePath();
   ctx.fill();
 
@@ -131,7 +126,7 @@ function drawMotionDiagram() {
   // Row labels
   ctx.textAlign = "left";
   ctx.font = "italic 15px 'STIX Two Math', 'Times New Roman', serif";
-  ctx.fillStyle = c.orange; ctx.fillText("a(t)", 14, accelerationY + 4);
+  ctx.fillStyle = c.yellow; ctx.fillText("a(t)", 14, accelerationY + 4);
   ctx.fillStyle = c.lime; ctx.fillText("v̄", 14, velocityY + 4);
   ctx.fillStyle = c.cyan; ctx.fillText("p(t)", 14, positionY + 4);
   ctx.font = "8px Space Mono";
@@ -164,12 +159,11 @@ function drawMotionDiagram() {
     const x = xFor(sample.p);
     const direction = Math.sign(sample.a);
     const length = direction === 0 ? 0 : direction * Math.min(46, 18 + Math.abs(sample.a) * 7);
-    drawVectorArrow(ctx, x, accelerationY, x + length, c.orange, 0.78);
-    ctx.fillStyle = c.orange;
-    ctx.textAlign = "center";
-    ctx.font = "italic 11px 'STIX Two Math', 'Times New Roman', serif";
-    ctx.fillText(direction === 0 ? "a = 0" : "a", x, accelerationY - 11);
-  });
+    drawVectorArrow(ctx, x, accelerationY, x + length, c.yellow, 0.92);
+  ctx.fillStyle = c.yellow;
+  ctx.textAlign = "center";
+  ctx.font = "700 14px 'STIX Two Math', 'Times New Roman', serif";
+  ctx.fillText(direction === 0 ? "a = 0" : "a", x, accelerationY - 13);
 
   // Average velocity vectors are centered over the gaps between dots.
   for (let i = 0; i < intervalSamples.length - 1; i++) {
