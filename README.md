@@ -21,3 +21,4 @@ The first version models motion with constant acceleration:
 - `p(t) = p₀ + v₀t + ½at²`
 - `v(t) = v₀ + at`
 - `a(t) = a`
+# Kinematics-Simulator
