@@ -5,24 +5,32 @@ const controls = {
   v0: $("#velocity"),
   a: $("#acceleration"),
   duration: $("#duration"),
-  timeInterval: $("#timeInterval"),
 };
 
+const SAMPLE_INTERVAL = 1;
+const VELOCITY_ARROW_SCALE = 12;
+const VELOCITY_ARROW_MIN = 28;
+const VELOCITY_ARROW_MAX = 96;
+const VELOCITY_ZERO_EPSILON = 0.005;
+
 const presets = {
-  cruise: { p0: 0, v0: 2, a: 0, duration: 8 },
-  speedup: { p0: -4, v0: 0.5, a: 1, duration: 8 },
-  brake: { p0: 0, v0: 6, a: -1, duration: 8 },
-  reverse: { p0: 6, v0: -1, a: -0.5, duration: 8 },
+  rest: { p0: 0, v0: 0, a: 0, duration: 8 },
+  constantForward: { p0: -6, v0: 2, a: 0, duration: 8 },
+  constantBackward: { p0: 6, v0: -2, a: 0, duration: 8 },
+  speedUpForward: { p0: -8, v0: 1, a: 0.75, duration: 8 },
+  slowDownForward: { p0: -8, v0: 6, a: -0.75, duration: 8 },
+  speedUpBackward: { p0: 8, v0: -1, a: -0.75, duration: 8 },
+  slowDownBackward: { p0: 8, v0: -6, a: 0.75, duration: 8 },
+  turnAround: { p0: -4, v0: 4, a: -1, duration: 8 },
+  accelFromRest: { p0: -8, v0: 0, a: 1, duration: 8 },
 };
 
 const state = {
-  ...presets.cruise,
-  timeInterval: 1,
+  ...presets.rest,
   time: 0,
   playing: false,
   lastFrame: null
 };
-const canvases = [$("#motionCanvas"), $("#positionGraph"), $("#velocityGraph"), $("#accelerationGraph")];
 
 function motionAt(t) {
   return {
@@ -30,6 +38,13 @@ function motionAt(t) {
     v: state.v0 + state.a * t,
     a: state.a,
   };
+}
+
+function sampleTimes() {
+  const times = [];
+  for (let t = 0; t <= state.duration; t += SAMPLE_INTERVAL) times.push(t);
+  if (times[times.length - 1] !== state.duration) times.push(state.duration);
+  return times;
 }
 
 function pretty(value, digits = 2) {
@@ -90,9 +105,9 @@ function drawVectorArrow(ctx, x1, y, x2, color, alpha = 1) {
     return;
   }
 
-  const shaftHeight = 3.4;
-  const headLength = 10;
-  const headHeight = 11;
+  const shaftHeight = 4;
+  const headLength = 12;
+  const headHeight = 14;
 
   const arrowLength = Math.abs(distance);
   const usableHeadLength = Math.min(headLength, arrowLength * 0.55);
@@ -117,211 +132,87 @@ function drawMotionDiagram() {
   const c = colors();
   ctx.clearRect(0, 0, w, h);
 
-  const intervalSamples = [];
-  for (let t = 0; t <= state.duration; t += state.timeInterval) {
-    intervalSamples.push({ t, ...motionAt(t) });
-}
+  const trajectory = sampleTimes().map((t) => motionAt(t).p);
+  const [min, max] = bounds(trajectory);
+  const left = 42;
+  const right = w - 42;
+  const lineY = h * 0.58;
+  const xFor = (position) => left + ((position - min) / (max - min)) * (right - left);
+  const now = motionAt(state.time);
 
-  if (intervalSamples.at(-1).t !== state.duration) {
-    intervalSamples.push({ t: state.duration, ...motionAt(state.duration) });
-  }
-
-  const allPositions = intervalSamples
-    .map((sample) => sample.p)
-    .concat(motionAt(state.time).p);
-
-  const [min, max] = bounds(allPositions);
-
-  const left = Math.min(92, w * 0.18);
-  const right = w - 28;
-  const diagramTop = 36;
-  const rowGap = 64;
-
-  const accelerationY = diagramTop;
-  const velocityY = diagramTop + rowGap;
-  const positionY = diagramTop + rowGap * 2;
-  const scaleY = positionY + 82;
-
-  const pointRadius = 3.7;
-  const xFor = (p) => left + ((p - min) / (max - min)) * (right - left);
-
-  const niceStep = (range) => {
-    const roughStep = range / 5;
-    const power = Math.pow(10, Math.floor(Math.log10(roughStep)));
-    const fraction = roughStep / power;
-
-    if (fraction <= 1) return power;
-    if (fraction <= 2) return 2 * power;
-    if (fraction <= 5) return 5 * power;
-    return 10 * power;
-  };
-
-  ctx.textAlign = "left";
-  ctx.font = "italic 15px 'STIX Two Math', 'Times New Roman', serif";
-  ctx.fillStyle = c.yellow; ctx.fillText("a(t)", 14, accelerationY + 4);
-  ctx.fillStyle = c.lime; ctx.fillText("v̄", 14, velocityY + 4);
-  ctx.fillStyle = c.orange; ctx.fillText("p(t)", 14, positionY + 4);
-
-  ctx.font = "8px Space Mono";
-  ctx.fillStyle = c.muted;
-  ctx.fillText("AT DOTS", 14, accelerationY + 18);
-  ctx.fillText("OVER GAPS", 14, velocityY + 18);
-  ctx.fillText("POSITION", 14, positionY + 18);
-
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, .16)";
-  ctx.lineWidth = 0.8;
-  ctx.setLineDash([3, 5]);
-  intervalSamples.forEach((sample) => {
-    const x = xFor(sample.p);
-    ctx.beginPath();
-    ctx.moveTo(x, 22);
-    ctx.lineTo(x, scaleY - 10);
-    ctx.stroke();
-  });
-  ctx.restore();
-
-  for (let i = 0; i < intervalSamples.length - 1; i++) {
-    const x1 = xFor(intervalSamples[i].p);
-    const x2 = xFor(intervalSamples[i + 1].p);
-    const inset = 0
-
-    drawVectorArrow(ctx, x1 + inset, positionY, x2 - inset, c.cyan, 0.82);
-
-    const midpoint = (x1 + x2) / 2;
-    if (Math.abs(x2 - x1) > 42) {
-      ctx.fillStyle = c.cyan;
-      ctx.textAlign = "center";
-      ctx.font = "700 10px 'STIX Two Math', 'Times New Roman', serif";
-      ctx.fillText(`Δx${i + 1}`, midpoint, positionY - 13);
-    }
-  }
-
-  intervalSamples.forEach((sample) => {
-    const x = xFor(sample.p);
-    const direction = Math.sign(sample.a);
-    const length = direction === 0 ? 0 : direction * Math.min(46, 18 + Math.abs(sample.a) * 7);
-
-    drawVectorArrow(ctx, x, accelerationY, x + length, c.yellow, 0.95);
-
-    ctx.fillStyle = c.yellow;
-    ctx.textAlign = "center";
-    ctx.font = "700 14px 'STIX Two Math', 'Times New Roman', serif";
-    ctx.fillText(direction === 0 ? "a = 0" : "a", x, accelerationY - 13);
-  });
-
-  for (let i = 0; i < intervalSamples.length - 1; i++) {
-    const first = intervalSamples[i];
-    const second = intervalSamples[i + 1];
-    const x1 = xFor(first.p);
-    const x2 = xFor(second.p);
-    const midpoint = (x1 + x2) / 2;
-    const velocity = motionAt((first.t + second.t) / 2).v;
-    const direction = Math.sign(velocity);
-    const length = direction === 0 ? 0 : direction * Math.min(54, Math.max(15, Math.abs(x2 - x1) * 0.58));
-
-    drawVectorArrow(ctx, midpoint - length / 2, velocityY, midpoint + length / 2, c.lime, 0.78);
-
-    ctx.fillStyle = c.lime;
-    ctx.textAlign = "center";
-    ctx.font = "700 12px 'STIX Two Math', 'Times New Roman', serif";
-    ctx.fillText(`v̄${i + 1}`, midpoint, velocityY - 12);
-  }
-
-  const acceptedLabelXs = [];
-  const MIN_LABEL_SPACING = 68;
-
-  intervalSamples.forEach((sample, index) => {
-    const x = xFor(sample.p);
-
-    ctx.fillStyle = c.orange;
-    ctx.globalAlpha = 0.95;
-    ctx.beginPath();
-    ctx.arc(x, positionY, pointRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    const canLabel =
-      index === 0 ||
-      index === intervalSamples.length - 1 ||
-      acceptedLabelXs.every((labelX) => Math.abs(labelX - x) > MIN_LABEL_SPACING);
-
-    if (canLabel) {
-      acceptedLabelXs.push(x);
-      ctx.fillStyle = c.ink;
-      ctx.textAlign = "center";
-      ctx.font = "12px 'STIX Two Math', 'Times New Roman', serif";
-      ctx.fillText(`t = ${pretty(sample.t, 0)} s`, x, positionY + 24);
-
-      ctx.fillStyle = c.muted;
-      ctx.font = "10px 'STIX Two Math', 'Times New Roman', serif";
-      ctx.fillText(`(${pretty(sample.p, 1)} m)`, x, positionY + 40);
-    }
-  });
-
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, .58)";
-  ctx.fillStyle = c.muted;
-  ctx.lineWidth = 1.1;
-  ctx.setLineDash([]);
-
-  ctx.beginPath();
-  ctx.moveTo(left, scaleY);
-  ctx.lineTo(right, scaleY);
-  ctx.stroke();
-
-  const step = niceStep(max - min);
+  const roughStep = (max - min) / Math.max(4, Math.min(8, Math.floor(w / 115)));
+  const power = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const fraction = roughStep / power;
+  const step = (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * power;
   const startTick = Math.ceil(min / step) * step;
   const endTick = Math.floor(max / step) * step;
 
-  ctx.textAlign = "center";
+  ctx.strokeStyle = "rgba(255, 255, 255, .62)";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(left, lineY);
+  ctx.lineTo(right, lineY);
+  ctx.stroke();
+
+  ctx.fillStyle = c.muted;
+  ctx.strokeStyle = "rgba(255, 255, 255, .42)";
   ctx.font = "9px Space Mono";
-
+  ctx.textAlign = "center";
   for (let value = startTick; value <= endTick + step * 0.001; value += step) {
-    const x = xFor(value);
-
+    const tickX = xFor(value);
     ctx.beginPath();
-    ctx.moveTo(x, scaleY - 5);
-    ctx.lineTo(x, scaleY + 5);
+    ctx.moveTo(tickX, lineY - 6);
+    ctx.lineTo(tickX, lineY + 6);
     ctx.stroke();
-
-    ctx.fillText(`${pretty(value, value % 1 === 0 ? 0 : 1)} m`, x, scaleY + 18);
+    ctx.fillText(`${pretty(value, Math.abs(value % 1) < 0.001 ? 0 : 1)} m`, tickX, lineY + 23);
   }
 
-  ctx.textAlign = "right";
-  ctx.font = "10px Space Mono";
-  ctx.fillStyle = c.cyan;
-  ctx.fillText("position scale", right, scaleY - 10);
-  ctx.restore();
-
-  const now = motionAt(state.time);
   const x = xFor(now.p);
+  const direction = Math.abs(now.v) < VELOCITY_ZERO_EPSILON ? 0 : Math.sign(now.v);
+  if (direction !== 0) {
+    const arrowLength = Math.max(
+      VELOCITY_ARROW_MIN,
+      Math.min(VELOCITY_ARROW_MAX, Math.abs(now.v) * VELOCITY_ARROW_SCALE)
+    );
+    const arrowEnd = Math.max(left, Math.min(right, x + direction * arrowLength));
+    drawVectorArrow(ctx, x, lineY, arrowEnd, c.lime, 0.92);
+
+    ctx.fillStyle = c.lime;
+    ctx.font = "700 11px 'Space Mono'";
+    ctx.textAlign = "center";
+    ctx.fillText(`v = ${pretty(now.v)} m/s`, (x + arrowEnd) / 2, lineY - 16);
+  }
 
   ctx.save();
-  ctx.globalAlpha = 0.22;
-  ctx.fillStyle = "#ffffff";
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle = c.pink;
   ctx.beginPath();
-  ctx.arc(x, positionY, pointRadius + 8, 0, Math.PI * 2);
+  ctx.arc(x, lineY, 16, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
   ctx.fillStyle = c.pink;
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(x, positionY, pointRadius +1.2, 0, Math.PI * 2);
+  ctx.arc(x, lineY, 8, 0, Math.PI * 2);
   ctx.fill();
+  ctx.stroke();
+
 }
   
-function drawGraph(canvas, valueFn, color, options = {}) {
+function drawGraph(canvas, valueFn, color) {
   const { ctx, w, h } = resizeCanvas(canvas);
   const c = colors();
-  const pad = { l: 38, r: 12, t: 14, b: 28 };
+  const pad = { l: 48, r: 14, t: 16, b: 32 };
 
   const points = Array.from({ length: 101 }, (_, i) => {
     const t = (i / 100) * state.duration;
     return { t, value: valueFn(t) };
   });
+  const sampledPoints = sampleTimes().map((t) => ({ t, value: valueFn(t) }));
 
-  const raw = bounds(points.map((d) => d.value));
+  const raw = bounds(sampledPoints.map((d) => d.value));
 
   const range = raw[1] - raw[0];
   const step = Math.pow(10, Math.floor(Math.log10(range / 5)));
@@ -342,13 +233,15 @@ function drawGraph(canvas, valueFn, color, options = {}) {
   ctx.clearRect(0, 0, w, h);
 
   ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
-  ctx.lineWidth = 0.65;
-  ctx.setLineDash([3, 5]);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+  ctx.lineWidth = 0.6;
+  ctx.setLineDash([]);
   ctx.fillStyle = c.muted;
-  ctx.font = "11px 'STIX Two Math', 'Times New Roman', serif";
+  ctx.font = "12px 'STIX Two Math', 'Times New Roman', serif";
 
-  for (let tx = 0; tx <= state.duration; tx += 1) {
+  const timeDivisions = 4;
+  for (let i = 0; i <= timeDivisions; i++) {
+    const tx = (i / timeDivisions) * state.duration;
     ctx.beginPath();
     ctx.moveTo(x(tx), pad.t);
     ctx.lineTo(x(tx), h - pad.b);
@@ -357,7 +250,7 @@ function drawGraph(canvas, valueFn, color, options = {}) {
     ctx.fillText(pretty(tx, 0), x(tx), h - 10);
   }
 
-  const divisions = 5;
+  const divisions = 4;
 
   for (let i = 0; i <= divisions; i++) {
     const val = max - (i / divisions) * (max - min);
@@ -373,8 +266,8 @@ function drawGraph(canvas, valueFn, color, options = {}) {
 
   const horizontalAxisY = min <= 0 && max >= 0 ? y(0) : h - pad.b;
 
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.96)";
-  ctx.lineWidth = 1.45;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.72)";
+  ctx.lineWidth = 1.2;
   ctx.setLineDash([]);
 
   ctx.beginPath();
@@ -388,8 +281,9 @@ function drawGraph(canvas, valueFn, color, options = {}) {
   ctx.stroke();
 
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 4;
   ctx.lineJoin = "round";
+  ctx.lineCap = "round";
 
   ctx.beginPath();
   points.forEach((point, i) => {
@@ -404,17 +298,28 @@ function drawGraph(canvas, valueFn, color, options = {}) {
   ctx.save();
   ctx.setLineDash([4, 4]);
   ctx.strokeStyle = c.pink;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 0.8;
   ctx.beginPath();
   ctx.moveTo(currentX, pad.t);
   ctx.lineTo(currentX, h - pad.b);
   ctx.stroke();
   ctx.restore();
 
-  ctx.fillStyle = c.orange;
+  ctx.save();
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(currentX, currentY, 4, 0, Math.PI * 2);
+  ctx.arc(currentX, currentY, 10, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = color;
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
 }
 
 function updateUI() {
@@ -423,16 +328,13 @@ function updateUI() {
   $("#velocityValue").textContent = `${pretty(state.v0, 1)} m/s`;
   $("#accelerationValue").textContent = `${pretty(state.a, 2)} m/s²`;
   $("#durationValue").textContent = `${state.duration} s`;
-  $("#timeIntervalValue").textContent = `${pretty(state.timeInterval, 1)} s`;
-  $("#dotIntervalLabel").textContent = `Dots every ${pretty(state.timeInterval, 1)} second${state.timeInterval === 1 ? "" : "s"}`;
   $("#timeReadout").textContent = `${pretty(state.time)} s`;
   $("#positionReadout").textContent = `${pretty(now.p)} m`;
   $("#velocityReadout").textContent = `${pretty(now.v)} m/s`;
   $("#accelerationReadout").textContent = `${pretty(now.a)} m/s²`;
-  $("#positionFormula").textContent = `p(t) = ${pretty(state.p0, 1)} + ${pretty(state.v0, 1)}t + ½(${pretty(state.a, 2)})t²`;
-  $("#velocityFormula").textContent = `v(t) = ${pretty(state.v0, 1)} + ${pretty(state.a, 2)}t`;
-  $("#playText").textContent = state.playing ? "Pause motion" : (state.time >= state.duration ? "Replay motion" : "Play motion");
-  $("#playIcon").textContent = state.playing ? "Ⅱ" : "▶";
+  $("#playText").textContent = state.time >= state.duration ? "Replay motion" : "Play motion";
+  $("#playIcon").textContent = "▶";
+  $("#pauseButton").disabled = !state.playing;
   drawMotionDiagram();
   const c = colors();
   drawGraph($("#positionGraph"), (t) => motionAt(t).p, c.cyan);
@@ -445,28 +347,31 @@ function syncFromControls() {
   state.v0 = Number(controls.v0.value);
   state.a = Number(controls.a.value);
   state.duration = Number(controls.duration.value);
-  state.timeInterval = Number(controls.timeInterval.value);
   state.time = Math.min(state.time, state.duration);
   state.playing = false;
-  document.querySelectorAll(".preset").forEach((button) => button.classList.remove("active"));
+  $("#presetSelect").value = "";
   updateUI();
 }
 
 Object.values(controls).forEach((control) => control.addEventListener("input", syncFromControls));
-document.querySelectorAll(".preset").forEach((button) => button.addEventListener("click", () => {
-  const preset = presets[button.dataset.preset];
+$("#presetSelect").addEventListener("change", (event) => {
+  const preset = presets[event.target.value];
+  if (!preset) return;
   Object.assign(state, preset, { time: 0, playing: false });
-  controls.p0.value = preset.p0; controls.v0.value = preset.v0; controls.a.value = preset.a; controls.duration.value = preset.duration;
-  document.querySelectorAll(".preset").forEach((item) => item.classList.toggle("active", item === button));
+  controls.p0.value = preset.p0;
+  controls.v0.value = preset.v0;
+  controls.a.value = preset.a;
+  controls.duration.value = preset.duration;
   updateUI();
-}));
+});
 
 $("#playButton").addEventListener("click", () => {
   if (state.time >= state.duration) state.time = 0;
-  state.playing = !state.playing;
+  state.playing = true;
   state.lastFrame = null;
   updateUI();
 });
+$("#pauseButton").addEventListener("click", () => { state.playing = false; updateUI(); });
 $("#resetButton").addEventListener("click", () => { state.time = 0; state.playing = false; updateUI(); });
 $("#themeButton").addEventListener("click", () => { document.body.classList.toggle("dark"); updateUI(); });
 

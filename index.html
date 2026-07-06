@@ -12,97 +12,109 @@
   </head>
   <body>
     <div class="app-shell">
-      <header class="topbar">
-        <a class="brand" href="#" aria-label="Motion Lab home">
-          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span>Motion Lab</span>
-        </a>
-        <p>1D Kinematics Playground</p>
-        <button class="icon-button" id="themeButton" type="button" aria-label="Toggle color theme">◐</button>
+      <header class="lab-header">
+        <p class="eyebrow">Physics Simulation Lab</p>
+        <div class="title-row">
+          <h1>Motion Graphs</h1>
+          <p>Connect an object's motion to displacement–time, velocity–time, and acceleration–time graphs.</p>
+        </div>
       </header>
 
       <main>
-        <section class="hero">
-          <div>
-            <p class="eyebrow">SEE MOTION, NOT JUST MATH</p>
-            <h1>Turn an equation into <em>motion.</em></h1>
-            <p class="lede">Adjust the conditions, press play, and watch the diagram and graphs tell the same story.</p>
-          </div>
-          <div class="formula-card" aria-label="Current motion equations">
-            <span>MODEL 01</span>
-            <p id="positionFormula">p(t) = 0 + 2t + ½(0)t²</p>
-            <p id="velocityFormula">v(t) = 2 + 0t</p>
-          </div>
-        </section>
-
         <section class="workspace">
           <aside class="controls panel">
-            <div class="section-heading">
-              <span>01</span>
-              <div><h2>Set the motion</h2><p>Constant acceleration model</p></div>
-            </div>
+            <div class="control-toolbar">
+              <section class="control-group scenario-group" aria-labelledby="scenarioHeading">
+                <h3 class="group-title" id="scenarioHeading">Scenario</h3>
+                <label class="sr-only" for="presetSelect">Choose a motion scenario</label>
+                <select id="presetSelect" class="preset-select">
+                  <option value="rest">Object at Rest</option>
+                  <option value="constantForward">Constant Velocity Forward</option>
+                  <option value="constantBackward">Constant Velocity Backward</option>
+                  <option value="speedUpForward">Speeding Up Forward</option>
+                  <option value="slowDownForward">Slowing Down Forward</option>
+                  <option value="speedUpBackward">Speeding Up Backward</option>
+                  <option value="slowDownBackward">Slowing Down Backward</option>
+                  <option value="turnAround">Turn Around Motion</option>
+                  <option value="accelFromRest">Constant Acceleration from Rest</option>
+                  <option value="">Custom motion</option>
+                </select>
+              </section>
 
-            <div class="preset-row" aria-label="Motion presets">
-              <button class="preset active" data-preset="cruise" type="button">Cruise</button>
-              <button class="preset" data-preset="speedup" type="button">Speed up</button>
-              <button class="preset" data-preset="brake" type="button">Brake</button>
-              <button class="preset" data-preset="reverse" type="button">Reverse</button>
-            </div>
+              <section class="control-group parameters-group" aria-labelledby="parametersHeading">
+                <h3 class="group-title" id="parametersHeading">Motion Parameters</h3>
+                <div class="control-fields">
+                <div class="field">
+                  <div class="field-label"><label for="position"><span class="physics-symbol">p₀</span><span class="field-description">Initial Position</span></label><output id="positionValue">0 m</output></div>
+                  <input id="position" type="range" min="-10" max="10" value="0" step="0.5" />
+                  <div class="range-limits"><span>−10 m</span><span>10 m</span></div>
+                </div>
+                <div class="field">
+                  <div class="field-label"><label for="velocity"><span class="physics-symbol">v₀</span><span class="field-description">Initial Velocity</span></label><output id="velocityValue">0 m/s</output></div>
+                  <input id="velocity" type="range" min="-8" max="8" value="0" step="0.5" />
+                  <div class="range-limits"><span>−8 m/s</span><span>8 m/s</span></div>
+                </div>
+                <div class="field">
+                  <div class="field-label"><label for="acceleration"><span class="physics-symbol">a</span><span class="field-description">Acceleration</span></label><output id="accelerationValue">0 m/s²</output></div>
+                  <input id="acceleration" type="range" min="-4" max="4" value="0" step="0.25" />
+                  <div class="range-limits"><span>−4 m/s²</span><span>4 m/s²</span></div>
+                </div>
+                <div class="field compact">
+                  <div class="field-label"><label for="duration"><span class="physics-symbol">T</span><span class="field-description">Duration</span></label><output id="durationValue">8 s</output></div>
+                  <input id="duration" type="range" min="2" max="12" value="8" step="1" />
+                  <div class="range-limits"><span>2 s</span><span>12 s</span></div>
+                </div>
+                </div>
+              </section>
 
-            <div class="field">
-              <div class="field-label"><label for="position">Initial position</label><output id="positionValue">0 m</output></div>
-              <input id="position" type="range" min="-10" max="10" value="0" step="0.5" />
-              <div class="range-limits"><span>−10 m</span><span>10 m</span></div>
+              <section class="control-group simulation-group" aria-labelledby="simulationHeading">
+                <h3 class="group-title" id="simulationHeading">Controls</h3>
+                <div class="control-actions">
+                  <button class="play-button" id="playButton" type="button" aria-label="Play motion"><span class="action-icon" id="playIcon">▶</span><span class="action-label">Play</span><span class="sr-only" id="playText">Play motion</span></button>
+                  <button class="transport-button" id="pauseButton" type="button" aria-label="Pause motion"><span class="action-icon">Ⅱ</span><span class="action-label">Pause</span></button>
+                  <button class="reset-button" id="resetButton" type="button" aria-label="Reset playhead"><span class="action-icon">↻</span><span class="action-label">Reset</span></button>
+                  <button class="icon-button" id="themeButton" type="button" aria-label="Toggle color theme"><span class="action-icon">☼</span><span class="action-label">Theme</span></button>
+                </div>
+              </section>
             </div>
-            <div class="field">
-              <div class="field-label"><label for="velocity">Initial velocity</label><output id="velocityValue">2 m/s</output></div>
-              <input id="velocity" type="range" min="-8" max="8" value="2" step="0.5" />
-              <div class="range-limits"><span>−8 m/s</span><span>8 m/s</span></div>
-            </div>
-            <div class="field">
-              <div class="field-label"><label for="acceleration">Acceleration</label><output id="accelerationValue">0 m/s²</output></div>
-              <input id="acceleration" type="range" min="-4" max="4" value="0" step="0.25" />
-              <div class="range-limits"><span>−4 m/s²</span><span>4 m/s²</span></div>
-            </div>
-            <div class="field compact">
-              <div class="field-label"><label for="duration">Duration</label><output id="durationValue">8 s</output></div>
-              <input id="duration" type="range" min="2" max="12" value="8" step="1" />
-            </div>
-            <div class="field compact">
-              <div class="field-label"><label for="timeInterval">Time interval</label><output id="timeIntervalValue">1 s</output></div>
-              <input id="timeInterval" type="range" min="0.5" max="2" value="1" step="0.5" />
-            </div>
-
-            <button class="play-button" id="playButton" type="button"><span id="playIcon">▶</span><span id="playText">Play motion</span></button>
-            <button class="reset-button" id="resetButton" type="button">Reset playhead</button>
           </aside>
 
           <section class="visuals">
-            <article class="panel diagram-card">
-              <div class="card-title"><div><span>02</span><h2>Motion diagram</h2></div><p id="dotIntervalLabel">Dots every 1 second</p></div>
-              <canvas id="motionCanvas" role="img" aria-label="Motion diagram showing the object's positions over time"></canvas>
-              <div class="live-readout">
-                <div><span>TIME</span><strong id="timeReadout">0.00 s</strong></div>
-                <div><span>POSITION</span><strong id="positionReadout">0.00 m</strong></div>
-                <div><span>VELOCITY</span><strong id="velocityReadout">2.00 m/s</strong></div>
-                <div><span>ACCEL.</span><strong id="accelerationReadout">0.00 m/s²</strong></div>
+            <article class="graphs-card">
+              <div class="card-title"><div><span>01</span><h2>Motion Graphs</h2></div><div class="legend"><i></i> current time</div></div>
+              <div class="graph-grid">
+                <div class="graph-wrap"><p><b>p–t</b> Displacement–Time <span>position (m)</span></p><canvas id="positionGraph"></canvas></div>
+                <div class="graph-wrap"><p><b>v–t</b> Velocity–Time <span>velocity (m/s)</span></p><canvas id="velocityGraph"></canvas></div>
+                <div class="graph-wrap"><p><b>a–t</b> Acceleration–Time <span>acceleration (m/s²)</span></p><canvas id="accelerationGraph"></canvas></div>
               </div>
             </article>
 
-            <article class="panel graphs-card">
-              <div class="card-title"><div><span>03</span><h2>Motion graphs</h2></div><div class="legend"><i></i> current time</div></div>
-              <div class="graph-grid">
-                <div class="graph-wrap"><p><b>p</b> POSITION <span>(m)</span></p><canvas id="positionGraph"></canvas></div>
-                <div class="graph-wrap"><p><b>v</b> VELOCITY <span>(m/s)</span></p><canvas id="velocityGraph"></canvas></div>
-                <div class="graph-wrap"><p><b>a</b> ACCELERATION <span>(m/s²)</span></p><canvas id="accelerationGraph"></canvas></div>
-              </div>
-              <div class="time-axis-label">TIME (s) →</div>
-            </article>
+            <div class="lower-grid">
+              <article class="diagram-card">
+                <div class="card-title"><div><span>02</span><h2>Motion Diagram</h2></div></div>
+                <canvas id="motionCanvas" role="img" aria-label="Number line showing the object's current position"></canvas>
+                <div class="live-readout">
+                  <div><span>POSITION</span><strong id="positionReadout">0.00 m</strong></div>
+                  <div><span>VELOCITY</span><strong id="velocityReadout">0.00 m/s</strong></div>
+                  <div><span>ACCELERATION</span><strong id="accelerationReadout">0.00 m/s²</strong></div>
+                </div>
+                <div class="time-badge"><span>TIME</span><strong id="timeReadout">0.00 s</strong></div>
+              </article>
+
+              <aside class="panel interpretation-card" aria-labelledby="interpretationHeading">
+                <div class="card-title"><div><span>03</span><h2 id="interpretationHeading">Interpretation Guide</h2></div></div>
+                <div class="guide-grid">
+                  <div><b>p–t</b><p>Slope represents <strong>velocity</strong>.</p></div>
+                  <div><b>v–t</b><p>Slope represents <strong>acceleration</strong>; area represents <strong>displacement</strong>.</p></div>
+                  <div><b>a–t</b><p>Area represents <strong>change in velocity</strong>.</p></div>
+                </div>
+              </aside>
+            </div>
           </section>
         </section>
       </main>
 
-      <footer><span>Motion Lab · Built for curious minds</span><span>p–t · v–t · a–t</span></footer>
+      <footer><span>Motion Lab · Motion Graphs Simulation</span><span>p–t · v–t · a–t</span></footer>
     </div>
     <script src="app.js"></script>
   </body>
